@@ -1,0 +1,211 @@
+﻿@page "/"
+@using Ventas.Web.Services
+@using Ventas.Domain.Entities
+@inject DashboardService Dashboard
+@attribute [Authorize(Policy = "RequireAdmin")]
+@rendermode InteractiveServer
+
+<PageTitle>Dashboard - Admin</PageTitle>
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="mb-0 fw-bold">Dashboard Analítico</h2>
+        <p class="text-muted mb-0">Resumen financiero y métricas clave.</p>
+    </div>
+    
+    <div class="card shadow-sm border-0 bg-white">
+        <div class="card-body p-2 d-flex align-items-center gap-2">
+            <div class="d-flex flex-column">
+                <small class="text-muted mb-1" style="font-size: 0.75rem;">Fecha Inicio</small>
+                <input type="date" class="form-control form-control-sm" @bind="FechaInicio" />
+            </div>
+            <div class="d-flex flex-column">
+                <small class="text-muted mb-1" style="font-size: 0.75rem;">Fecha Fin</small>
+                <input type="date" class="form-control form-control-sm" @bind="FechaFin" />
+            </div>
+            <div class="d-flex flex-column justify-content-end h-100 mt-4">
+                <button class="btn btn-primary btn-sm" @onclick="CargarDatosAsync">
+                    <i class="bi bi-search"></i> Filtrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (IsLoading)
+{
+    <div class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 bg-primary text-white rounded-4 overflow-hidden position-relative">
+                <div class="card-body p-4">
+                    <h6 class="card-title text-uppercase fw-semibold mb-1 opacity-75">Ventas (Periodo)</h6>
+                    <h2 class="mb-0 fw-bold display-6">S/ @VentasPeriodo.ToString("N2")</h2>
+                    <i class="bi bi-cash-stack position-absolute opacity-25" style="font-size: 5rem; right: -10px; bottom: -20px;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 bg-success text-white rounded-4 overflow-hidden position-relative">
+                <div class="card-body p-4">
+                    <h6 class="card-title text-uppercase fw-semibold mb-1 opacity-75">Ventas Esta Semana</h6>
+                    <h2 class="mb-0 fw-bold display-6">S/ @VentasSemana.ToString("N2")</h2>
+                    <i class="bi bi-graph-up-arrow position-absolute opacity-25" style="font-size: 5rem; right: -10px; bottom: -20px;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 bg-info text-white rounded-4 overflow-hidden position-relative">
+                <div class="card-body p-4">
+                    <h6 class="card-title text-uppercase fw-semibold mb-1 opacity-75">Ventas Este Mes</h6>
+                    <h2 class="mb-0 fw-bold display-6">S/ @VentasMes.ToString("N2")</h2>
+                    <i class="bi bi-calendar-check position-absolute opacity-25" style="font-size: 5rem; right: -10px; bottom: -20px;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 bg-warning text-dark rounded-4 overflow-hidden position-relative">
+                <div class="card-body p-4">
+                    <h6 class="card-title text-uppercase fw-semibold mb-1 opacity-75">Alertas de Stock</h6>
+                    <h2 class="mb-0 fw-bold display-6">@StockCritico.Count()</h2>
+                    <small class="opacity-75 fw-medium">Modelos por agotarse</small>
+                    <i class="bi bi-exclamation-triangle position-absolute opacity-25" style="font-size: 5rem; right: -10px; bottom: -20px;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5 mb-4">
+            <div class="card border-0 shadow-sm h-100 rounded-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h6 class="fw-bold text-uppercase mb-0">Ingresos por Medio de Pago</h6>
+                    <p class="text-muted small">Del periodo seleccionado</p>
+                </div>
+                <div class="card-body">
+                    @if (MediosPago.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var m in MediosPago)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-3 border-bottom">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded p-2 me-3 text-primary">
+                                            <i class="bi bi-wallet2"></i>
+                                        </div>
+                                        <span class="fw-medium">@m.Medio</span>
+                                    </div>
+                                    <span class="badge bg-dark rounded-pill px-3 py-2 fs-6">S/ @m.Total.ToString("N2")</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">No hay ventas en este periodo.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7 mb-4">
+            <div class="card border-0 shadow-sm h-100 rounded-4 border-top border-danger border-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h6 class="fw-bold text-uppercase text-danger mb-0"><i class="bi bi-exclamation-octagon me-2"></i> Stock Crítico</h6>
+                    <p class="text-muted small">Modelos con menos de 5 docenas disponibles.</p>
+                </div>
+                <div class="card-body p-0">
+                    @if (StockCritico.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-muted small">
+                                    <tr>
+                                        <th class="ps-4">Sucursal</th>
+                                        <th>Modelo</th>
+                                        <th class="pe-4 text-end">Stock (Docenas)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var s in StockCritico)
+                                    {
+                                        <tr>
+                                            <td class="ps-4">
+                                                <span class="badge bg-secondary">@s.Sucursal?.Nombre</span>
+                                            </td>
+                                            <td class="fw-medium">@s.Modelo?.Nombre</td>
+                                            <td class="pe-4 text-end">
+                                                <span class="text-danger fw-bold fs-5">@s.CantidadDocenas</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-success">
+                            <i class="bi bi-check-circle fs-1"></i>
+                            <p class="mt-2 fw-medium">El inventario está saludable.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private DateTime FechaInicio = Ventas.Domain.Helpers.TimeHelper.GetPeruTime().Date;
+    private DateTime FechaFin = Ventas.Domain.Helpers.TimeHelper.GetPeruTime().Date;
+    
+    private bool IsLoading = true;
+    private decimal VentasPeriodo = 0;
+    private decimal VentasSemana = 0;
+    private decimal VentasMes = 0;
+    private List<dynamic> MediosPago = new();
+    private List<InventarioSucursal> StockCritico = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosAsync();
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        // Evitar que la fecha fin sea menor a inicio
+        if (FechaFin < FechaInicio) FechaFin = FechaInicio;
+
+        var hoy = Ventas.Domain.Helpers.TimeHelper.GetPeruTime().Date;
+        var inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek);
+        var inicioMes = new DateTime(hoy.Year, hoy.Month, 1);
+
+        // Ventas del periodo seleccionado
+        VentasPeriodo = await Dashboard.GetTotalVentasAsync(FechaInicio, FechaFin.AddDays(1).AddTicks(-1));
+        
+        // Indicadores fijos
+        VentasSemana = await Dashboard.GetTotalVentasAsync(inicioSemana, hoy.AddDays(1).AddTicks(-1));
+        VentasMes = await Dashboard.GetTotalVentasAsync(inicioMes, hoy.AddDays(1).AddTicks(-1));
+
+        MediosPago = await Dashboard.GetVentasPorMedioPagoAsync(FechaInicio, FechaFin.AddDays(1).AddTicks(-1));
+        StockCritico = await Dashboard.GetStockCriticoAsync(5);
+
+        IsLoading = false;
+    }
+}
+
+

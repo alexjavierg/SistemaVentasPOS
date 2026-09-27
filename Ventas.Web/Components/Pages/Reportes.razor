@@ -1,0 +1,63 @@
+@page "/reportes"
+@using Ventas.Web.Services
+@inject DashboardService Dashboard
+@attribute [Authorize(Policy = "RequireAdmin")]
+@rendermode InteractiveServer
+
+<PageTitle>Análisis y Reportes - Admin</PageTitle>
+
+<h2 class="mb-4">Reporte Analítico: Rotación de Inventario</h2>
+<p class="text-muted">Este reporte utiliza lógica de datos para determinar qué modelos se agotan más rápido (Índice de Agotamiento) y cuáles tienen mayor volumen de ventas.</p>
+
+@if (Reporte == null)
+{
+    <p><em>Analizando historial de base de datos...</em></p>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-hover table-striped mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Modelo</th>
+                        <th class="text-center">Stock Físico (Docenas)</th>
+                        <th class="text-center">Ventas Históricas (Docenas)</th>
+                        <th>Índice de Agotamiento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Reporte)
+                    {
+                        string badgeColor = r.IndiceAgotamiento >= 80 ? "bg-danger" : 
+                                            r.IndiceAgotamiento >= 50 ? "bg-warning text-dark" : "bg-info text-dark";
+                        <tr>
+                            <td>@r.Categoria</td>
+                            <td class="fw-bold">@r.Nombre</td>
+                            <td class="text-center">@r.StockActual</td>
+                            <td class="text-center fw-bold text-success">@r.DocenasVendidas</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2 fw-bold">@r.IndiceAgotamiento %</span>
+                                    <div class="progress flex-grow-1" style="height: 10px;">
+                                        <div class="progress-bar @badgeColor" role="progressbar" style="width: @r.IndiceAgotamiento.ToString("0", System.Globalization.CultureInfo.InvariantCulture)%;" aria-valuenow="@r.IndiceAgotamiento" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private List<dynamic>? Reporte;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Reporte = await Dashboard.GetAnalisisAvanzadoAsync();
+    }
+}

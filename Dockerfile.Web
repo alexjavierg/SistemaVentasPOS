@@ -1,0 +1,21 @@
+﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+WORKDIR /app
+EXPOSE 80
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY ["Ventas.Web/Ventas.Web.csproj", "Ventas.Web/"]
+COPY ["Ventas.Domain/Ventas.Domain.csproj", "Ventas.Domain/"]
+RUN dotnet restore "Ventas.Web/Ventas.Web.csproj"
+COPY . .
+WORKDIR "/src/Ventas.Web"
+RUN dotnet build "Ventas.Web.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "Ventas.Web.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+RUN mkdir -p /app/wwwroot/uploads
+ENTRYPOINT ["dotnet", "Ventas.Web.dll"]

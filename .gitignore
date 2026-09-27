@@ -1,0 +1,24 @@
+﻿# .NET
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userprefs
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Environment Variables
+.env
+
+# Uploads
+Ventas.Web/wwwroot/uploads/*
+!Ventas.Web/wwwroot/uploads/.gitkeep
+
+# IDEs
+.vscode/
+.vs/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db

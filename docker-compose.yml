@@ -1,0 +1,46 @@
+﻿version: '3.8'
+
+services:
+  api-ventas:
+    build:
+      context: .
+      dockerfile: Dockerfile.Api
+    container_name: api-ventas
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - TZ=America/Lima
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=8080
+      - DB_CONNECTION_STRING=server=${DB_HOST};database=${DB_NAME};uid=${DB_USER};pwd=${DB_PASSWORD};
+      - JWT_KEY=${JWT_SECRET}
+    networks:
+      - solufact_default
+
+  web-ventas:
+    build:
+      context: .
+      dockerfile: Dockerfile.Web
+    container_name: web-ventas
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - TZ=America/Lima
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=80
+      - DB_CONNECTION_STRING=server=${DB_HOST};database=${DB_NAME};uid=${DB_USER};pwd=${DB_PASSWORD};
+    depends_on:
+      - api-ventas
+    networks:
+      - solufact_default
+    volumes:
+      - web_uploads:/app/wwwroot/uploads
+
+networks:
+  solufact_default:
+    external: true
+
+volumes:
+  web_uploads:

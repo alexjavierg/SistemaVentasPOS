@@ -1,0 +1,102 @@
+@page "/usuarios/nuevo"
+@page "/usuarios/editar/{Id:int}"
+@using Ventas.Domain.Entities
+@using Ventas.Web.Services
+@inject UserService UserService
+@inject NavigationManager Navigation
+@attribute [Authorize(Policy = "RequireAdmin")]
+@rendermode InteractiveServer
+
+<PageTitle>@(Id == 0 ? "Nuevo Usuario" : "Editar Usuario")</PageTitle>
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">@(Id == 0 ? "Crear Nuevo Usuario" : "Editar Usuario")</h4>
+            </div>
+            <div class="card-body">
+                
+                <EditForm Model="@usuario" OnValidSubmit="Guardar">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label class="form-label">Nombre de Usuario (Username)</label>
+                        <InputText class="form-control" @bind-Value="usuario.Username" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Rol del Sistema</label>
+                        <InputSelect class="form-select" @bind-Value="usuario.Rol">
+                            <option value="Admin">Admin (Dueño - Acceso Total y Web)</option>
+                            <option value="Vendedor">Vendedor (Cajera - Solo POS Escritorio)</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3 border p-3 bg-light rounded">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" @bind="plainPassword" placeholder="@(Id == 0 ? "Requerida para nuevo usuario" : "Dejar en blanco para mantener actual")" />
+                        @if (Id != 0)
+                        {
+                            <small class="text-muted">Si no desea cambiar la contraseña actual, deje este campo vacío.</small>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ErrorMensaje))
+                    {
+                        <div class="alert alert-danger">@ErrorMensaje</div>
+                    }
+
+                    <hr />
+                    <div class="d-flex justify-content-end">
+                        <a href="/usuarios" class="btn btn-secondary me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Guardar Usuario
+                        </button>
+                    </div>
+                </EditForm>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Usuario usuario = new() { Rol = "Vendedor" };
+    private string plainPassword = "";
+    private string? ErrorMensaje;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id != 0)
+        {
+            var u = await UserService.GetUsuarioByIdAsync(Id);
+            if (u != null)
+            {
+                usuario = u;
+            }
+            else
+            {
+                Navigation.NavigateTo("/usuarios");
+            }
+        }
+    }
+
+    private async Task Guardar()
+    {
+        ErrorMensaje = null;
+        var result = await UserService.GuardarUsuarioAsync(usuario, plainPassword);
+        
+        if (result.Success)
+        {
+            Navigation.NavigateTo("/usuarios");
+        }
+        else
+        {
+            ErrorMensaje = result.Message;
+        }
+    }
+}

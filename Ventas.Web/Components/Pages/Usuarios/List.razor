@@ -1,0 +1,99 @@
+﻿@page "/usuarios"
+@using Ventas.Domain.Entities
+@using Ventas.Web.Services
+@inject UserService UserService
+@attribute [Authorize(Policy = "RequireAdmin")]
+@rendermode InteractiveServer
+
+<PageTitle>GestiÃ³n de Usuarios</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Usuarios del Sistema</h2>
+    <a href="/usuarios/nuevo" class="btn btn-primary"><i class="bi bi-person-plus"></i> Nuevo Usuario</a>
+</div>
+
+@if (usuarios == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Intentos Fallidos</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in usuarios)
+                    {
+                        bool bloqueado = u.BloqueadoHasta.HasValue && u.BloqueadoHasta > Ventas.Domain.Helpers.TimeHelper.GetPeruTime();
+                        <tr>
+                            <td>@u.Id</td>
+                            <td class="font-weight-bold">@u.Username</td>
+                            <td>
+                                <span class="badge @(u.Rol == "Admin" ? "bg-danger" : "bg-info")">@u.Rol</span>
+                            </td>
+                            <td>
+                                @if (bloqueado)
+                                {
+                                    <span class="badge bg-danger">Bloqueado / Inactivo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Activo</span>
+                                }
+                            </td>
+                            <td>@u.IntentosFallidos</td>
+                            <td class="text-end">
+                                <a href="/usuarios/editar/@u.Id" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </a>
+                                @if (bloqueado)
+                                {
+                                    <button class="btn btn-sm btn-success" @onclick="() => CambiarEstado(u.Id, false)">
+                                        <i class="bi bi-unlock"></i> Activar
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-danger" @onclick="() => CambiarEstado(u.Id, true)" disabled="@(u.Username == "admin")">
+                                        <i class="bi bi-lock"></i> Desactivar
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Usuario>? usuarios;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        usuarios = await UserService.GetUsuariosAsync();
+    }
+
+    private async Task CambiarEstado(int id, bool bloquear)
+    {
+        await UserService.CambiarEstadoAccesoAsync(id, bloquear);
+        await CargarDatos();
+    }
+}
+

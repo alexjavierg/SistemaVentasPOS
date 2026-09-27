@@ -1,0 +1,52 @@
+﻿<Window x:Class="Ventas.Desktop.HistorialVentasWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="14"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Title="Historial de Ventas" Height="600" Width="900" WindowStartupLocation="CenterOwner" WindowState="Maximized">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="VENTAS REALIZADAS" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" Foreground="#673AB7"/>
+
+        <DataGrid x:Name="dgVentas" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                  Background="White" BorderThickness="0" RowHeight="50" GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                <DataGridTextColumn Header="Nota Nro" Binding="{Binding Id}" Width="0.5*"/>
+                <DataGridTextColumn Header="Fecha" Binding="{Binding Fecha, StringFormat=dd/MM/yyyy HH:mm}" Width="1*"/>
+                <DataGridTextColumn Header="Cajero" Binding="{Binding Usuario.Username}" Width="1*"/>
+                <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat=S/ {0:N2}}" Width="1*"/>
+                <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="1*"/>
+                <DataGridTextColumn Header="Motivo (Anulada)" Binding="{Binding MotivoAnulacion}" Width="2*"/>
+                
+                <DataGridTemplateColumn Width="220">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,10,0">
+                                <Button Content="Reimprimir" Style="{StaticResource MaterialDesignOutlinedButton}" Height="30" Margin="0,0,10,0" Tag="{Binding}" Click="btnReimprimir_Click"/>
+                                <Button x:Name="btnAnular" Content="Anular" Background="#D32F2F" BorderBrush="#D32F2F" Foreground="White" Height="30" Width="70" Tag="{Binding}" Click="btnAnular_Click"/>
+                            </StackPanel>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Estado}" Value="Anulada">
+                                    <Setter TargetName="btnAnular" Property="Visibility" Value="Hidden" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>
+
+
+

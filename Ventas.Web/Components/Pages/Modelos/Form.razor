@@ -1,0 +1,355 @@
+﻿@page "/modelos/nuevo"
+@page "/modelos/editar/{Id:int}"
+@using Ventas.Domain.Entities
+@using Ventas.Web.Services
+@using SixLabors.ImageSharp
+@using SixLabors.ImageSharp.Processing
+@inject CatalogService CatalogService
+@inject NavigationManager Navigation
+@inject IStorageService Storage
+@inject IJSRuntime JS
+@attribute [Authorize(Policy = "RequireAdmin")]
+@rendermode InteractiveServer
+
+<PageTitle>@(Id == 0 ? "Nuevo Modelo" : "Editar Modelo")</PageTitle>
+
+<div class="row">
+    <div class="col-12 col-lg-8 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">@(Id == 0 ? "Registrar Nuevo Modelo" : "Editar Modelo")</h4>
+            </div>
+            <div class="card-body">
+                
+                @if (categorias == null)
+                {
+                    <p>Cargando formulario...</p>
+                }
+                else
+                {
+                    <EditForm Model="@modelo" OnValidSubmit="Guardar">
+                        <DataAnnotationsValidator />
+
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-8 mb-3 mb-md-0">
+                                <label class="form-label">Nombre Completo del Producto</label>
+                                <InputText class="form-control" @bind-Value="modelo.Nombre" required />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label">Talla</label>
+<div class="input-group">
+    <InputSelect class="form-select" @bind-Value="modelo.Talla">
+        <option value="">Seleccione...</option>
+        @if (tallas != null)
+        {
+            @foreach (var t in tallas)
+            {
+                <option value="@t.Nombre">@t.Nombre</option>
+            }
+        }
+    </InputSelect>
+    <button type="button" class="btn btn-outline-secondary" @onclick="NuevaTalla" title="Crear Talla">+</button>
+</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="form-label">Nombre Corto (Para Etiqueta TSPL) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <InputText class="form-control" @bind-Value="modelo.NombreCorto" @oninput="ValidarLongitud" maxlength="18" required />
+                                    <span class="input-group-text @(CaracteresRestantes < 0 ? "bg-danger text-white" : "")">
+                                        @CaracteresRestantes / 18
+                                    </span>
+                                </div>
+                                <small class="text-muted">Máximo 18 caracteres. Este nombre se imprimirá en las etiquetas físicas.</small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-6 mb-3 mb-md-0">
+                                <label class="form-label">Precio de Venta <strong>(Por Docena)</strong></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">S/</span>
+                                    <InputNumber class="form-control" @bind-Value="modelo.PrecioPorDocena" min="0" step="0.1" required />
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3 mb-md-0">
+                                <label class="form-label">Costo de Compra <strong>(Por Docena)</strong></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">S/</span>
+                                    <InputNumber class="form-control" @bind-Value="modelo.CostoPorDocena" min="0" step="0.1" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-6 mb-3 mb-md-0">
+                                <label class="form-label">Categoría</label>
+<div class="input-group">
+    <InputSelect class="form-select" @bind-Value="modelo.CategoriaId">
+        <option value="0">Seleccione...</option>
+        @if (categorias != null)
+        {
+            @foreach (var cat in categorias)
+            {
+                <option value="@cat.Id">@cat.Nombre</option>
+            }
+        }
+    </InputSelect>
+    <button type="button" class="btn btn-outline-secondary" @onclick="NuevaCategoria" title="Crear Categoría">+</button>
+</div>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3 mb-md-0">
+                                <label class="form-label">Foto del Producto (URL Externa o Archivo Local)</label>
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text"><i class="bi bi-link"></i></span>
+                                    <InputText class="form-control" @bind-Value="modelo.Foto" placeholder="https://tu-servidor-externo.com/img.jpg" />
+                                </div>
+                                <InputFile class="form-control" OnChange="SubirFoto" accept="image/*" title="O subir archivo local (se optimizará a JPG)" />
+                                @if (isUploading)
+                                {
+                                    <small class="text-info">Procesando imagen...</small>
+                                }
+                                @if (!string.IsNullOrEmpty(modelo.Foto))
+                                {
+                                    <div class="mt-2">
+                                        <img src="@modelo.Foto" width="100" class="rounded border" />
+                                        <button type="button" class="btn btn-sm btn-outline-danger mt-1 d-block" @onclick="BorrarFoto">Quitar Foto</button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(ErrorMensaje))
+                        {
+                            <div class="alert alert-danger">@ErrorMensaje</div>
+                        }
+
+                        <hr />
+                        <div class="d-flex justify-content-end">
+                            <a href="/modelos" class="btn btn-secondary me-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary" disabled="@(CaracteresRestantes < 0 || isUploading)">
+                                <i class="bi bi-save"></i> Guardar Modelo
+                            </button>
+                        </div>
+                    </EditForm>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal Dinámico -->
+@if (mostrarModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">@modalTitulo</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" class="form-control" @bind="modalInputTexto" @onkeyup="HandleModalKeyUp" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="GuardarModal">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool mostrarModal = false;
+    private string modalTitulo = "";
+    private string modalInputTexto = "";
+    private string modalModo = ""; // "CATEGORIA" o "TALLA"
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+        modalInputTexto = "";
+    }
+
+    private async Task GuardarModal()
+    {
+        if (string.IsNullOrWhiteSpace(modalInputTexto)) return;
+
+        if (modalModo == "CATEGORIA")
+        {
+            var res = await CatalogService.CrearCategoriaAsync(modalInputTexto.ToUpper());
+            if (res.Success)
+            {
+                categorias = await CatalogService.GetCategoriasAsync();
+                modelo.CategoriaId = categorias.Last().Id;
+            }
+        }
+        else if (modalModo == "TALLA")
+        {
+            var res = await CatalogService.CrearTallaAsync(modalInputTexto.ToUpper());
+            if (res.Success)
+            {
+                tallas = await CatalogService.GetTallasAsync();
+                modelo.Talla = modalInputTexto.ToUpper();
+            }
+        }
+
+        CerrarModal();
+        StateHasChanged();
+    }
+
+    private async Task HandleModalKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await GuardarModal();
+        if (e.Key == "Escape") CerrarModal();
+    }
+    [Parameter]
+    public int Id { get; set; }
+
+    private Modelo modelo = new() { Talla = "Estandar" };
+    private List<Categoria>? categorias;
+    private List<Talla>? tallas;
+    private string? ErrorMensaje;
+    private int CaracteresRestantes = 18;
+    private bool isUploading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categorias = await CatalogService.GetCategoriasAsync();
+        tallas = await CatalogService.GetTallasAsync();
+
+        if (Id != 0)
+        {
+            var m = await CatalogService.GetModeloByIdAsync(Id);
+            if (m != null)
+            {
+                modelo = m;
+                ActualizarConteo(modelo.NombreCorto);
+            }
+            else
+            {
+                Navigation.NavigateTo("/modelos");
+            }
+        }
+    }
+
+    private void ValidarLongitud(ChangeEventArgs e)
+    {
+        string text = e.Value?.ToString() ?? "";
+        modelo.NombreCorto = text;
+        ActualizarConteo(text);
+    }
+
+    private void ActualizarConteo(string? text)
+    {
+        CaracteresRestantes = 18 - (text?.Length ?? 0);
+    }
+
+    private async Task SubirFoto(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null) return;
+
+        isUploading = true;
+        ErrorMensaje = null;
+        StateHasChanged();
+
+        try
+        {
+            string fileName = $"img_{Ventas.Domain.Helpers.TimeHelper.GetPeruTime().Ticks}.jpg";
+
+            using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024); // max 5MB
+            using var memStream = new MemoryStream();
+            await stream.CopyToAsync(memStream);
+            memStream.Position = 0;
+
+            using var image = Image.Load(memStream);
+            if (image.Width > 800)
+            {
+                image.Mutate(x => x.Resize(new ResizeOptions
+                {
+                    Mode = ResizeMode.Max,
+                    Size = new Size(800, 800)
+                }));
+            }
+            
+            using var webpStream = new MemoryStream();
+            await image.SaveAsJpegAsync(webpStream);
+            webpStream.Position = 0;
+
+            await BorrarFoto();
+
+            modelo.Foto = await Storage.UploadFileAsync(webpStream, fileName);
+        }
+        catch (Exception ex)
+        {
+            ErrorMensaje = $"Error al procesar la foto: {ex.Message}";
+        }
+        finally
+        {
+            isUploading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task BorrarFoto()
+    {
+        if (!string.IsNullOrEmpty(modelo.Foto))
+        {
+            await Storage.DeleteFileAsync(modelo.Foto);
+            modelo.Foto = null;
+        }
+    }
+
+            private void NuevaCategoria()
+    {
+        modalModo = "CATEGORIA";
+        modalTitulo = "Crear Nueva Categoría";
+        modalInputTexto = "";
+        mostrarModal = true;
+    }
+
+        private void NuevaTalla()
+    {
+        modalModo = "TALLA";
+        modalTitulo = "Crear Nueva Talla";
+        modalInputTexto = "";
+        mostrarModal = true;
+    }
+
+    private async Task Guardar()
+    {
+        ErrorMensaje = null;
+
+        if (modelo.CategoriaId == 0)
+        {
+            ErrorMensaje = "Debe seleccionar una categoría.";
+            return;
+        }
+
+                modelo.Nombre = modelo.Nombre?.ToUpper();
+        modelo.NombreCorto = modelo.NombreCorto?.ToUpper();
+        modelo.Talla = modelo.Talla?.ToUpper();
+        var result = await CatalogService.GuardarModeloAsync(modelo);
+        if (result.Success)
+        {
+            Navigation.NavigateTo("/modelos");
+        }
+        else
+        {
+            ErrorMensaje = result.Message;
+        }
+    }
+}
+
+
+
+
+

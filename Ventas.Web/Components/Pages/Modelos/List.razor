@@ -1,0 +1,369 @@
+﻿@page "/modelos"
+@using Ventas.Domain.Entities
+@using Ventas.Web.Services
+@using Microsoft.JSInterop
+@inject CatalogService CatalogService
+@inject IJSRuntime JS
+@attribute [Authorize(Policy = "RequireAdmin")]
+@rendermode InteractiveServer
+
+<PageTitle>Catálogo de Modelos</PageTitle>
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <h2>Gestión de Catálogo e Inventario</h2>
+    <a href="/modelos/nuevo" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Nuevo Modelo</a>
+</div>
+
+@if (!string.IsNullOrEmpty(GlobalError))
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @GlobalError
+        <button type="button" class="btn-close" @onclick="() => GlobalError = null"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(GlobalSuccess))
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @GlobalSuccess
+        <button type="button" class="btn-close" @onclick="() => GlobalSuccess = null"></button>
+    </div>
+}
+
+@if (modelos == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    var categoriasIds = modelos.Select(m => m.Categoria?.Id ?? 0).Distinct().ToList();
+    <div class="accordion" id="accordionCategorias">
+        @foreach (var catId in categoriasIds)
+        {
+            var catName = modelos.FirstOrDefault(m => m.Categoria?.Id == catId)?.Categoria?.Nombre ?? "Sin Categoría";
+            var catModelos = modelos.Where(m => (m.Categoria?.Id ?? 0) == catId).ToList();
+                        <div class="accordion-item mb-3 border-0 shadow-sm overflow-hidden" style="border-radius: 10px;">
+                <h2 class="accordion-header" id="heading_@catId">
+                    <button class="accordion-button collapsed bg-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_@catId" aria-expanded="false" aria-controls="collapse_@catId">
+                        <i class="bi bi-folder2-open me-2 text-primary"></i> @catName <span class="badge bg-secondary ms-2">@catModelos.Count</span>
+                    </button>
+                </h2>
+                <div id="collapse_@catId" class="accordion-collapse collapse" aria-labelledby="heading_@catId">
+                    <div class="accordion-body p-0 table-responsive">
+                        <table class="table table-hover table-striped mb-0 align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Foto</th>
+                                    <th>Modelo</th>
+                                    <th>Talla</th>
+                                    <th>Categoría</th>
+                                    <th>Stock Total</th>
+                                    <th>Precio</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var m in catModelos)
+                                {
+                                    var stockTotal = m.Inventarios.Sum(i => i.CantidadDocenas);
+                                    <tr>
+                                        <td>@m.Id</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(m.Foto))
+                                            {
+                                                <img src="@m.Foto" style="width:50px; height:50px; object-fit:cover; border-radius:5px;" />
+                                            }
+                                        </td>
+                                        <td class="fw-bold">@m.Nombre</td>
+                                        <td><span class="badge bg-info text-dark">@m.Talla</span></td>
+                                        <td>@m.Categoria?.Nombre</td>
+                                        <td>
+                                            @if (stockTotal <= 0)
+                                            {
+                                                <span class="badge bg-danger">Agotado</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">@stockTotal Docenas</span>
+                                            }
+                                        </td>
+                                        <td class="fw-bold text-primary">S/ @m.PrecioPorDocena.ToString("N2")</td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-success me-1" @onclick="() => AbrirIngresoStock(m.Id)" title="Ingresar Stock">
+                                                <i class="bi bi-box-arrow-in-down"></i> Stock
+                                            </button>
+                                            <button class="btn btn-sm btn-info me-1 text-white" @onclick="() => AbrirTransferencia(m.Id)" title="Transferir a otra sucursal">
+                                                <i class="bi bi-arrow-left-right"></i> Transf.
+                                            </button>
+                                            <a href="/modelos/editar/@m.Id" class="btn btn-sm btn-primary me-1" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-danger" @onclick="() => EliminarModelo(m.Id)" title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (MostrarModalStock)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Ingresar Stock al Kardex</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Las docenas ingresadas se sumarán a los tickets pendientes (TSPL).</p>
+                    
+                    <div class="mb-3">
+                        <label class="fw-bold">Sucursal Destino</label>
+                        <select class="form-select" @bind="StockSucursalId">
+                            @foreach (var s in sucursales)
+                            {
+                                <option value="@s.Id">@s.Nombre</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-bold">Cantidad <strong>(En Docenas)</strong></label>
+                        <input type="number" class="form-control form-control-lg text-center" @bind="StockCantidad" min="0" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-bold">Motivo del Ingreso</label>
+                        <input type="text" class="form-control" @bind="StockMotivo" placeholder="Ej: Compra a proveedor local" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ModalError))
+                    {
+                        <div class="alert alert-danger p-2"><i class="bi bi-exclamation-triangle"></i> @ModalError</div>
+                    }
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                    <button type="button" class="btn btn-success" @onclick="GuardarStock"><i class="bi bi-check-circle"></i> Confirmar Ingreso</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (MostrarModalTransf)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Transferencia entre Sucursales</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Mueve inventario físico de una tienda a otra. (No requiere imprimir etiquetas nuevas).</p>
+                    
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="fw-bold text-danger">Sucursal Origen (Salida)</label>
+                            <select class="form-select" @bind="TransfOrigenId">
+                                <option value="0">Seleccionar...</option>
+                                @foreach (var s in sucursales)
+                                {
+                                    <option value="@s.Id">@s.Nombre</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="fw-bold text-success">Sucursal Destino (Entrada)</label>
+                            <select class="form-select" @bind="TransfDestinoId">
+                                <option value="0">Seleccionar...</option>
+                                @foreach (var s in sucursales)
+                                {
+                                    <option value="@s.Id">@s.Nombre</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-bold">Cantidad a Mover <strong>(Docenas)</strong></label>
+                        <input type="number" class="form-control form-control-lg text-center" @bind="TransfCantidad" min="0" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ModalError))
+                    {
+                        <div class="alert alert-danger p-2"><i class="bi bi-exclamation-triangle"></i> @ModalError</div>
+                    }
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                    <button type="button" class="btn btn-info text-white" @onclick="GuardarTransferencia"><i class="bi bi-arrow-left-right"></i> Ejecutar Traslado</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Modelo>? modelos;
+    private List<Sucursal> sucursales = new();
+
+    private string? GlobalError;
+    private string? GlobalSuccess;
+
+    private bool MostrarModalStock = false;
+    private bool MostrarModalTransf = false;
+
+    private int StockModeloId;
+    private int StockSucursalId;
+    private int StockCantidad = 0;
+    private string StockMotivo = "Ingreso por Administrador";
+    private string? ModalError;
+
+    private int TransfOrigenId;
+    private int TransfDestinoId;
+    private int TransfCantidad = 0;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+        sucursales = await CatalogService.GetSucursalesAsync();
+    }
+
+    private async Task CargarDatos()
+    {
+        modelos = await CatalogService.GetModelosAsync();
+    }
+
+    private async Task<int> GetAdminId()
+    {
+        if (AuthState != null)
+        {
+            var authState = await AuthState;
+            var claim = authState.User.FindFirst("UserId");
+            if (claim != null && int.TryParse(claim.Value, out int uid)) return uid;
+        }
+        return 1;
+    }
+
+    private async Task EliminarModelo(int id)
+    {
+        GlobalError = null;
+        GlobalSuccess = null;
+
+        bool confirm = await JS.InvokeAsync<bool>("confirm", "¿Estás seguro de que deseas eliminar este producto y su foto permanentemente? El historial financiero se mantendrá intacto gracias a la captura estática de datos.");
+        if (!confirm) return;
+
+        var result = await CatalogService.EliminarModeloAsync(id);
+        if (result.Success)
+        {
+            GlobalSuccess = result.Message;
+            await CargarDatos();
+        }
+        else
+        {
+            GlobalError = result.Message;
+        }
+    }
+
+    private void AbrirIngresoStock(int modeloId)
+    {
+        StockModeloId = modeloId;
+        StockCantidad = 0;
+        StockMotivo = "Ingreso por Administrador";
+        ModalError = null;
+        if (sucursales.Any()) StockSucursalId = sucursales.First().Id;
+        MostrarModalStock = true;
+    }
+
+    private void AbrirTransferencia(int modeloId)
+    {
+        StockModeloId = modeloId;
+        TransfCantidad = 0;
+        TransfOrigenId = 0;
+        TransfDestinoId = 0;
+        ModalError = null;
+        MostrarModalTransf = true;
+    }
+
+    private void CerrarModal()
+    {
+        MostrarModalStock = false;
+        MostrarModalTransf = false;
+    }
+
+    private async Task GuardarStock()
+    {
+        ModalError = null;
+        if (StockCantidad <= 0)
+        {
+            ModalError = "La cantidad debe ser mayor a 0 docenas.";
+            return;
+        }
+
+        int adminId = await GetAdminId();
+        var result = await CatalogService.AgregarStockAsync(StockModeloId, StockSucursalId, StockCantidad, StockMotivo, adminId);
+        
+        if (result.Success)
+        {
+            GlobalSuccess = result.Message;
+            await CargarDatos();
+            CerrarModal();
+        }
+        else
+        {
+            ModalError = result.Message;
+        }
+    }
+
+    private async Task GuardarTransferencia()
+    {
+        ModalError = null;
+        if (TransfOrigenId == 0 || TransfDestinoId == 0)
+        {
+            ModalError = "Debe seleccionar ambas sucursales.";
+            return;
+        }
+        if (TransfCantidad <= 0)
+        {
+            ModalError = "La cantidad debe ser mayor a 0 docenas.";
+            return;
+        }
+
+        int adminId = await GetAdminId();
+        var result = await CatalogService.TransferirStockAsync(StockModeloId, TransfOrigenId, TransfDestinoId, TransfCantidad, adminId);
+        
+        if (result.Success)
+        {
+            GlobalSuccess = result.Message;
+            await CargarDatos();
+            CerrarModal();
+        }
+        else
+        {
+            ModalError = result.Message;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
