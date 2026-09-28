@@ -67,10 +67,9 @@ app.UseAuthorization();
 using (var scope = app.Services.CreateScope())
 {
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    try
+        try
     {
         context.Database.Migrate();
-    {
         context.Database.ExecuteSqlRaw("CREATE TABLE IF NOT EXISTS Tallas (Id INT AUTO_INCREMENT PRIMARY KEY, Nombre VARCHAR(50) NOT NULL);");
         var count = context.Database.ExecuteSqlRaw("SELECT COUNT(*) FROM Tallas;");
         // We can just rely on normal seed for Tallas if we want, but ExecuteSqlRaw doesn't return count easily in this way.
@@ -102,6 +101,7 @@ using (var scope2 = app.Services.CreateScope())
 app.MapControllers();
 
 app.Run();
+
 
 
 
