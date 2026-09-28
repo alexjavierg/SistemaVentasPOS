@@ -11,7 +11,7 @@ services:
       - TZ=America/Lima
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - DB_CONNECTION_STRING=server=solufact-db;database=sistemaventas;uid=root;pwd=${DB_PASSWORD};
+      - DB_CONNECTION_STRING=server=${DB_HOST};database=${DB_NAME};uid=${DB_USER};pwd=${DB_PASSWORD};
       - JWT_KEY=${JWT_SECRET}
     networks:
       - solufactcloud_default
@@ -26,7 +26,7 @@ services:
       - TZ=America/Lima
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=80
-      - DB_CONNECTION_STRING=server=solufact-db;database=sistemaventas;uid=root;pwd=${DB_PASSWORD};
+      - DB_CONNECTION_STRING=server=${DB_HOST};database=${DB_NAME};uid=${DB_USER};pwd=${DB_PASSWORD};
     depends_on:
       - api-ventas
     networks:
@@ -42,6 +42,7 @@ networks:
 volumes:
   web_uploads:
   web_keys:
+
 
 
 
