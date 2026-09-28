@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 
 namespace Ventas.Desktop.Services
@@ -15,6 +15,8 @@ namespace Ventas.Desktop.Services
         public string LogoLocalName { get; set; } = string.Empty;
         public string LogoEtiquetasLocalName { get; set; } = string.Empty;
         public int IdSucursal { get; set; } = 1;
+        public string ApiUrl { get; set; } = "http://localhost:5286/";
+        public string WebUrl { get; set; } = "http://localhost:5209";
     }
 
     public static class LocalSettingsManager
@@ -43,3 +45,4 @@ namespace Ventas.Desktop.Services
         }
     }
 }
+

@@ -13,7 +13,10 @@ namespace Ventas.Desktop.Services
         {
             _httpClient = new HttpClient();
             // URL base de la API segÃºn launchSettings.json
-            _httpClient.BaseAddress = new Uri("http://localhost:5286/");
+            var config = LocalSettingsManager.Cargar();
+            string apiUrl = string.IsNullOrWhiteSpace(config.ApiUrl) ? "http://localhost:5286/" : config.ApiUrl;
+            if (!apiUrl.EndsWith("/")) apiUrl += "/";
+            _httpClient.BaseAddress = new Uri(apiUrl);
         }
 
         public async Task<Modelo?> ObtenerModeloPorIdAsync(int id)
@@ -143,5 +146,6 @@ namespace Ventas.Desktop.Services
         }
     }
 }
+
 
 

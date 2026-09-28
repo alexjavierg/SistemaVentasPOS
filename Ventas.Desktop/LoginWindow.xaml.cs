@@ -47,7 +47,10 @@ namespace Ventas.Desktop
             try
             {
                 using var client = new HttpClient();
-                client.BaseAddress = new Uri("http://localhost:5286/");
+                var config = Ventas.Desktop.Services.LocalSettingsManager.Cargar();
+                string apiUrl = string.IsNullOrWhiteSpace(config.ApiUrl) ? "http://localhost:5286/" : config.ApiUrl;
+                if (!apiUrl.EndsWith("/")) apiUrl += "/";
+                client.BaseAddress = new Uri(apiUrl);
                 
                 var loginData = new { Username = username, Password = password };
                 var response = await client.PostAsJsonAsync("api/auth/login", loginData);
@@ -87,4 +90,5 @@ namespace Ventas.Desktop
         public string Token { get; set; } = string.Empty;
     }
 }
+
 

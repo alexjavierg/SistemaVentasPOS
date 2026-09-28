@@ -22,3 +22,6 @@ Ventas.Web/wwwroot/uploads/*
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Obfuscated Deployment
+Deploy_WPF/
