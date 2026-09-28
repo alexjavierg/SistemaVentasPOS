@@ -9,7 +9,7 @@ services:
     restart: unless-stopped
     environment:
       - TZ=America/Lima
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - DB_CONNECTION_STRING=server=${DB_HOST};database=${DB_NAME};uid=${DB_USER};pwd=${DB_PASSWORD};
       - JWT_KEY=${JWT_SECRET}
@@ -24,7 +24,7 @@ services:
     restart: unless-stopped
     environment:
       - TZ=America/Lima
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=80
       - DB_CONNECTION_STRING=server=${DB_HOST};database=${DB_NAME};uid=${DB_USER};pwd=${DB_PASSWORD};
     depends_on:
@@ -42,6 +42,7 @@ networks:
 volumes:
   web_uploads:
   web_keys:
+
 
 
 
