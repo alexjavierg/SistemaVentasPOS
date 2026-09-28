@@ -47,10 +47,11 @@ namespace Ventas.Desktop
             try
             {
                 using var client = new HttpClient();
-                var config = Ventas.Desktop.Services.LocalSettingsManager.Cargar();
-                string apiUrl = string.IsNullOrWhiteSpace(config.ApiUrl) ? "http://localhost:5286/" : config.ApiUrl;
-                if (!apiUrl.EndsWith("/")) apiUrl += "/";
-                client.BaseAddress = new Uri(apiUrl);
+#if DEBUG
+                client.BaseAddress = new Uri("http://localhost:5286/");
+#else
+                client.BaseAddress = new Uri("https://api.mujerbonita.solufactcloud.com/");
+#endif
                 
                 var loginData = new { Username = username, Password = password };
                 var response = await client.PostAsJsonAsync("api/auth/login", loginData);
@@ -90,5 +91,7 @@ namespace Ventas.Desktop
         public string Token { get; set; } = string.Empty;
     }
 }
+
+
 
 

@@ -87,9 +87,7 @@
                 <TextBlock Text="Sucursal Activa" FontWeight="Bold" Foreground="#673AB7" Margin="0,0,0,5"/>
                 <TextBox x:Name="txtIdSucursal" materialDesign:HintAssist.Hint="ID Sucursal (Ej. 1)" Style="{StaticResource MaterialDesignFloatingHintTextBox}" Margin="0,0,0,20"/>
 
-                <TextBlock Text="Conexión a la Nube" FontWeight="Bold" Foreground="#673AB7" Margin="0,10,0,5"/>
-                <TextBox x:Name="txtApiUrl" materialDesign:HintAssist.Hint="URL de la API (Ej: https://api.tu-dominio.com/)" Style="{StaticResource MaterialDesignFloatingHintTextBox}" Margin="0,0,0,10"/>
-                <TextBox x:Name="txtWebUrl" materialDesign:HintAssist.Hint="URL del Portal Web (Ej: https://tu-dominio.com)" Style="{StaticResource MaterialDesignFloatingHintTextBox}" Margin="0,0,0,20"/>
+                
             </StackPanel>
         </ScrollViewer>
 
@@ -104,5 +102,6 @@
         </Grid>
     </Grid>
 </Window>
+
 
 

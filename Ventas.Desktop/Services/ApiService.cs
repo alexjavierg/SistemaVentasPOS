@@ -13,10 +13,12 @@ namespace Ventas.Desktop.Services
         {
             _httpClient = new HttpClient();
             // URL base de la API segÃºn launchSettings.json
-            var config = LocalSettingsManager.Cargar();
-            string apiUrl = string.IsNullOrWhiteSpace(config.ApiUrl) ? "http://localhost:5286/" : config.ApiUrl;
-            if (!apiUrl.EndsWith("/")) apiUrl += "/";
-            _httpClient.BaseAddress = new Uri(apiUrl);
+#if DEBUG
+            _httpClient.BaseAddress = new Uri("http://localhost:5286/");
+#else
+            // EN PRODUCCIÓN: Asegúrate de que esta URL sea la correcta para tu API
+            _httpClient.BaseAddress = new Uri("https://api.mujerbonita.solufactcloud.com/");
+#endif
         }
 
         public async Task<Modelo?> ObtenerModeloPorIdAsync(int id)
@@ -146,6 +148,8 @@ namespace Ventas.Desktop.Services
         }
     }
 }
+
+
 
 
 

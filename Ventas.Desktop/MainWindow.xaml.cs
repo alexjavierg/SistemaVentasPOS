@@ -58,8 +58,11 @@ namespace Ventas.Desktop
                                 string fullImageUrl = string.Empty;
                 if (!string.IsNullOrEmpty(m.Foto))
                 {
-                    var config = Ventas.Desktop.Services.LocalSettingsManager.Cargar();
-                    string webUrl = string.IsNullOrWhiteSpace(config.WebUrl) ? "http://localhost:5209" : config.WebUrl.TrimEnd('/');
+#if DEBUG
+                    string webUrl = "http://localhost:5209";
+#else
+                    string webUrl = "https://mujerbonita.solufactcloud.com";
+#endif
                     fullImageUrl = m.Foto.StartsWith("http") ? m.Foto : webUrl + m.Foto;
                 }
 
@@ -475,6 +478,9 @@ namespace Ventas.Desktop
 
 
 }
+
+
+
 
 
 
