@@ -101,12 +101,8 @@
 </div>
                             </div>
                             <div class="col-12 col-md-6 mb-3 mb-md-0">
-                                <label class="form-label">Foto del Producto (URL Externa o Archivo Local)</label>
-                                <div class="input-group mb-2">
-                                    <span class="input-group-text"><i class="bi bi-link"></i></span>
-                                    <InputText class="form-control" @bind-Value="modelo.Foto" placeholder="https://tu-servidor-externo.com/img.jpg" />
-                                </div>
-                                <InputFile class="form-control" OnChange="SubirFoto" accept="image/*" title="O subir archivo local (se optimizará a JPG)" />
+                                                                <label class="form-label">Foto del Producto</label>
+                                <InputFile class="form-control" OnChange="SubirFoto" accept="image/*" title="Seleccionar Imagen" />
                                 @if (isUploading)
                                 {
                                     <small class="text-info">Procesando imagen...</small>
@@ -348,6 +344,7 @@
         }
     }
 }
+
 
 
 
