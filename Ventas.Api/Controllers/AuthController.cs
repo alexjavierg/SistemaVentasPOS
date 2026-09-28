@@ -54,7 +54,8 @@ namespace Ventas.Api.Controllers
             await _context.SaveChangesAsync();
 
             // Generate JWT Token
-            var jwtKey = _config["Jwt:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY");
+                        var jwtKey = _config["Jwt:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY");
+            if (string.IsNullOrWhiteSpace(jwtKey)) jwtKey = "F4llb4ck_S3cr3t_K3y_For_JWT_Th4t_Is_L0ng_En0ugh";
             var keyBytes = System.Text.Encoding.UTF8.GetBytes(jwtKey!);
             var claims = new[]
             {
@@ -86,4 +87,5 @@ namespace Ventas.Api.Controllers
         public string Password { get; set; } = string.Empty;
     }
 }
+
 

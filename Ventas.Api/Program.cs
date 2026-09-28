@@ -27,6 +27,7 @@ builder.Services.AddCors(options =>
 
 // Configure JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY");
+if (string.IsNullOrWhiteSpace(jwtKey)) jwtKey = "F4llb4ck_S3cr3t_K3y_For_JWT_Th4t_Is_L0ng_En0ugh";
 var keyBytes = System.Text.Encoding.UTF8.GetBytes(jwtKey!);
 
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)
@@ -101,6 +102,7 @@ using (var scope2 = app.Services.CreateScope())
 app.MapControllers();
 
 app.Run();
+
 
 
 
