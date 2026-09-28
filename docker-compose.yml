@@ -16,7 +16,7 @@ services:
       - DB_CONNECTION_STRING=server=${DB_HOST};database=${DB_NAME};uid=${DB_USER};pwd=${DB_PASSWORD};
       - JWT_KEY=${JWT_SECRET}
     networks:
-      - solufact_default
+      - solufactcloud_default
 
   web-ventas:
     build:
@@ -34,13 +34,14 @@ services:
     depends_on:
       - api-ventas
     networks:
-      - solufact_default
+      - solufactcloud_default
     volumes:
       - web_uploads:/app/wwwroot/uploads
 
 networks:
-  solufact_default:
+  solufactcloud_default:
     external: true
 
 volumes:
   web_uploads:
+
