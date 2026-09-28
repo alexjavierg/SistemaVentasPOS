@@ -33,6 +33,7 @@ services:
       - solufactcloud_default
     volumes:
       - web_uploads:/app/wwwroot/uploads
+      - web_keys:/root/.aspnet/DataProtection-Keys
 
 networks:
   solufactcloud_default:
@@ -40,5 +41,8 @@ networks:
 
 volumes:
   web_uploads:
+  web_keys:
+
+
 
 
