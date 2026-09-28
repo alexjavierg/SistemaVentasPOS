@@ -7,8 +7,6 @@ services:
       dockerfile: Dockerfile.Api
     container_name: api-ventas
     restart: unless-stopped
-    ports:
-      - "8080:8080"
     environment:
       - TZ=America/Lima
       - ASPNETCORE_ENVIRONMENT=Production
@@ -24,8 +22,6 @@ services:
       dockerfile: Dockerfile.Web
     container_name: web-ventas
     restart: unless-stopped
-    ports:
-      - "80:80"
     environment:
       - TZ=America/Lima
       - ASPNETCORE_ENVIRONMENT=Production
@@ -44,4 +40,5 @@ networks:
 
 volumes:
   web_uploads:
+
 
