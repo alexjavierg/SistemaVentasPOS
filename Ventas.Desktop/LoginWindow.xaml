@@ -19,9 +19,10 @@
             <TextBox x:Name="txtUsuario" materialDesign:HintAssist.Hint="Usuario" Style="{StaticResource MaterialDesignFloatingHintTextBox}" Margin="0,0,0,20" FontSize="16" KeyDown="txtUsuario_KeyDown"/>
             <PasswordBox x:Name="txtPassword" materialDesign:HintAssist.Hint="Contraseña" Style="{StaticResource MaterialDesignFloatingHintRevealPasswordBox}" Margin="0,0,0,30" FontSize="16" KeyDown="txtPassword_KeyDown"/>
             
-            <Button Content="INGRESAR" Height="50" FontSize="16" Style="{StaticResource MaterialDesignRaisedButton}" Click="btnIngresar_Click" IsDefault="True"/>
+            <Button Content="INGRESAR" Height="50" FontSize="16" Style="{StaticResource MaterialDesignRaisedButton}" Click="btnIngresar_Click"/>
         </StackPanel>
     </Grid>
 </Window>
+
 
 

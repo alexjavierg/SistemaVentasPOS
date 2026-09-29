@@ -50,7 +50,7 @@ namespace Ventas.Desktop
 #if DEBUG
                 client.BaseAddress = new Uri("http://localhost:5286/");
 #else
-                client.BaseAddress = new Uri("https://api.mujerbonita.solufactcloud.com/");
+                client.BaseAddress = new Uri("https://ventasapi.solufactcloud.com/");
 #endif
                 
                 var loginData = new { Username = username, Password = password };
@@ -91,6 +91,7 @@ namespace Ventas.Desktop
         public string Token { get; set; } = string.Empty;
     }
 }
+
 
 
 

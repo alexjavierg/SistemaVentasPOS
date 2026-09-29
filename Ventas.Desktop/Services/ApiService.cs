@@ -17,7 +17,7 @@ namespace Ventas.Desktop.Services
             _httpClient.BaseAddress = new Uri("http://localhost:5286/");
 #else
             // EN PRODUCCIÓN: Asegúrate de que esta URL sea la correcta para tu API
-            _httpClient.BaseAddress = new Uri("https://api.mujerbonita.solufactcloud.com/");
+            _httpClient.BaseAddress = new Uri("https://ventasapi.solufactcloud.com/");
 #endif
         }
 
@@ -148,6 +148,7 @@ namespace Ventas.Desktop.Services
         }
     }
 }
+
 
 
 
