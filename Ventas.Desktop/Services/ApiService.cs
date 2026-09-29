@@ -19,6 +19,8 @@ namespace Ventas.Desktop.Services
             // EN PRODUCCIÓN: Asegúrate de que esta URL sea la correcta para tu API
             _httpClient.BaseAddress = new Uri("https://ventasapi.solufactcloud.com/");
 #endif
+            if (!string.IsNullOrEmpty(App.JwtToken))
+                _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", App.JwtToken);
         }
 
         public async Task<Modelo?> ObtenerModeloPorIdAsync(int id)
@@ -148,6 +150,8 @@ namespace Ventas.Desktop.Services
         }
     }
 }
+
+
 
 
 
