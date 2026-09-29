@@ -49,12 +49,22 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseStaticFiles();
+
+// Servir la carpeta de almacenamiento compartido
+var storagePath = Path.Combine(Directory.GetCurrentDirectory(), "storage");
+if (!Directory.Exists(storagePath)) Directory.CreateDirectory(storagePath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(storagePath),
+    RequestPath = "/storage"
+});
 app.MapStaticAssets();
 app.MapAuthEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
 
 
 

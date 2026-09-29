@@ -59,11 +59,11 @@ namespace Ventas.Desktop
                 if (!string.IsNullOrEmpty(m.Foto))
                 {
 #if DEBUG
-                    string webUrl = "http://localhost:5209";
+                    string apiUrl = "http://localhost:5286";
 #else
-                    string webUrl = "https://mujerbonita.solufactcloud.com";
+                    string apiUrl = "https://ventasapi.solufactcloud.com";
 #endif
-                    fullImageUrl = m.Foto.StartsWith("http") ? m.Foto : webUrl + m.Foto;
+                    fullImageUrl = m.Foto.StartsWith("http") ? m.Foto : apiUrl + m.Foto;
                 }
 
                 CatalogoVisual.Add(new ProductoMockDto
@@ -478,6 +478,7 @@ namespace Ventas.Desktop
 
 
 }
+
 
 
 

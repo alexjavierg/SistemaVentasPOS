@@ -61,10 +61,15 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
+var storagePath = Path.Combine(Directory.GetCurrentDirectory(), "storage");
+if (!Directory.Exists(storagePath)) Directory.CreateDirectory(storagePath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(storagePath),
+    RequestPath = "/storage"
+});
+
 app.UseAuthorization();
-
-
-
 using (var scope = app.Services.CreateScope())
 {
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -102,6 +107,8 @@ using (var scope2 = app.Services.CreateScope())
 app.MapControllers();
 
 app.Run();
+
+
 
 
 

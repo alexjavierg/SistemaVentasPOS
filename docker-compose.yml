@@ -9,12 +9,14 @@ services:
     restart: unless-stopped
     environment:
       - TZ=America/Lima
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_HTTP_PORTS=8080
       - DB_CONNECTION_STRING=server=${DB_HOST};database=${DB_NAME};uid=${DB_USER};pwd=${DB_PASSWORD};
       - JWT_KEY=${JWT_SECRET}
     networks:
       - solufactcloud_default
+    volumes:
+      - shared_storage:/app/storage
 
   web-ventas:
     build:
@@ -24,7 +26,7 @@ services:
     restart: unless-stopped
     environment:
       - TZ=America/Lima
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_HTTP_PORTS=80
       - DB_CONNECTION_STRING=server=${DB_HOST};database=${DB_NAME};uid=${DB_USER};pwd=${DB_PASSWORD};
     depends_on:
@@ -32,7 +34,7 @@ services:
     networks:
       - solufactcloud_default
     volumes:
-      - web_uploads:/app/wwwroot/uploads
+      - shared_storage:/app/storage
       - web_keys:/root/.aspnet/DataProtection-Keys
 
 networks:
@@ -40,13 +42,6 @@ networks:
     external: true
 
 volumes:
-  web_uploads:
+  shared_storage:
   web_keys:
-
-
-
-
-
-
-
 
