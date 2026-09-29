@@ -16,13 +16,14 @@
             <materialDesign:PackIcon Kind="AccountCircle" Width="80" Height="80" HorizontalAlignment="Center" Foreground="#673AB7" Margin="0,0,0,20"/>
             <TextBlock Text="INICIAR SESIÓN" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,30"/>
             
-            <TextBox x:Name="txtUsuario" materialDesign:HintAssist.Hint="Usuario" Style="{StaticResource MaterialDesignFloatingHintTextBox}" Margin="0,0,0,20" FontSize="16" KeyDown="txtUsuario_KeyDown"/>
-            <PasswordBox x:Name="txtPassword" materialDesign:HintAssist.Hint="Contraseña" Style="{StaticResource MaterialDesignFloatingHintRevealPasswordBox}" Margin="0,0,0,30" FontSize="16" KeyDown="txtPassword_KeyDown"/>
+            <TextBox x:Name="txtUsuario" TabIndex="0" materialDesign:HintAssist.Hint="Usuario" Style="{StaticResource MaterialDesignFloatingHintTextBox}" Margin="0,0,0,20" FontSize="16" KeyDown="txtUsuario_KeyDown"/>
+            <PasswordBox x:Name="txtPassword" TabIndex="1" materialDesign:HintAssist.Hint="Contraseña" Style="{StaticResource MaterialDesignFloatingHintRevealPasswordBox}" Margin="0,0,0,30" FontSize="16" KeyDown="txtPassword_KeyDown"/>
             
-            <Button Content="INGRESAR" Height="50" FontSize="16" Style="{StaticResource MaterialDesignRaisedButton}" Click="btnIngresar_Click"/>
+            <Button Content="INGRESAR" Height="50" FontSize="16" Style="{StaticResource MaterialDesignRaisedButton}" Click="btnIngresar_Click" TabIndex="2"/>
         </StackPanel>
     </Grid>
 </Window>
+
 
 
 
